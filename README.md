@@ -5,7 +5,7 @@ An [OpenClaw](https://github.com/openclaw/openclaw) plugin that implements the [
 ## What It Does
 
 - Exposes an **A2A-compliant endpoint** (JSON-RPC + REST) so other agents can send messages to your OpenClaw agent
-- Publishes an **Agent Card** at `/.well-known/agent.json` for peer discovery
+- Publishes an **Agent Card** at `/.well-known/agent-card.json` for peer discovery (legacy alias: `/.well-known/agent.json`)
 - Supports **bearer token authentication** for secure inter-agent communication
 - Routes inbound A2A messages to your OpenClaw agent and returns the response
 - Allows your agent to **call peer agents** via the A2A protocol
@@ -106,7 +106,7 @@ openclaw gateway restart
 
 ```bash
 # Check the Agent Card is accessible
-curl -s http://localhost:18800/.well-known/agent.json | python3 -m json.tool
+curl -s http://localhost:18800/.well-known/agent-card.json | python3 -m json.tool
 ```
 
 You should see your Agent Card with name, skills, and URL.
@@ -119,7 +119,7 @@ To communicate with another A2A agent, add it as a peer:
 openclaw config set plugins.entries.a2a-gateway.config.peers '[
   {
     "name": "PeerName",
-    "agentCardUrl": "http://<PEER_IP>:18800/.well-known/agent.json",
+    "agentCardUrl": "http://<PEER_IP>:18800/.well-known/agent-card.json",
     "auth": {
       "type": "bearer",
       "token": "<PEER_TOKEN>"
@@ -173,7 +173,9 @@ node <PLUGIN_PATH>/skill/scripts/a2a-send.mjs \
 
 This is implemented as a non-standard `message.agentId` field understood by this plugin. It is most reliable over JSON-RPC/REST. gRPC transport may drop unknown Message fields.
 
-### From your OpenClaw agent
+### Agent-side runtime awareness (TOOLS.md)
+
+Even if the plugin is installed and configured, an LLM agent will not reliably "infer" how to call A2A peers (peer URL, token, command to run). For dependable **outbound** A2A calls, you should add an A2A section to the agent's `TOOLS.md`.
 
 Add this to your agent's `TOOLS.md` so it knows how to call peers (see `skill/references/tools-md-template.md` for the full template):
 
@@ -260,7 +262,7 @@ openclaw config set plugins.entries.a2a-gateway.config.security.token "$A_TOKEN"
 openclaw config set plugins.entries.a2a-gateway.config.routing.defaultAgentId 'main'
 
 # Add Server B as peer (use B's token)
-openclaw config set plugins.entries.a2a-gateway.config.peers '[{"name":"Server-B","agentCardUrl":"http://100.10.10.2:18800/.well-known/agent.json","auth":{"type":"bearer","token":"<B_TOKEN>"}}]'
+openclaw config set plugins.entries.a2a-gateway.config.peers '[{"name":"Server-B","agentCardUrl":"http://100.10.10.2:18800/.well-known/agent-card.json","auth":{"type":"bearer","token":"<B_TOKEN>"}}]'
 
 openclaw gateway restart
 ```
@@ -283,7 +285,7 @@ openclaw config set plugins.entries.a2a-gateway.config.security.token "$B_TOKEN"
 openclaw config set plugins.entries.a2a-gateway.config.routing.defaultAgentId 'main'
 
 # Add Server A as peer (use A's token)
-openclaw config set plugins.entries.a2a-gateway.config.peers '[{"name":"Server-A","agentCardUrl":"http://100.10.10.1:18800/.well-known/agent.json","auth":{"type":"bearer","token":"<A_TOKEN>"}}]'
+openclaw config set plugins.entries.a2a-gateway.config.peers '[{"name":"Server-A","agentCardUrl":"http://100.10.10.1:18800/.well-known/agent-card.json","auth":{"type":"bearer","token":"<A_TOKEN>"}}]'
 
 openclaw gateway restart
 ```
@@ -292,10 +294,10 @@ openclaw gateway restart
 
 ```bash
 # From Server A → test Server B's Agent Card
-curl -s http://100.10.10.2:18800/.well-known/agent.json
+curl -s http://100.10.10.2:18800/.well-known/agent-card.json
 
 # From Server B → test Server A's Agent Card
-curl -s http://100.10.10.1:18800/.well-known/agent.json
+curl -s http://100.10.10.1:18800/.well-known/agent-card.json
 
 # Send a message A → B (using SDK script)
 node <PLUGIN_PATH>/skill/scripts/a2a-send.mjs \
@@ -327,7 +329,7 @@ node <PLUGIN_PATH>/skill/scripts/a2a-send.mjs \
 
 | Endpoint | Method | Description |
 |----------|--------|-------------|
-| `/.well-known/agent.json` | GET | Agent Card (discovery) |
+| `/.well-known/agent-card.json` | GET | Agent Card (discovery) |
 | `/a2a/jsonrpc` | POST | A2A JSON-RPC (message/send) |
 
 ## Troubleshooting

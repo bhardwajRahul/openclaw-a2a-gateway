@@ -5,7 +5,7 @@
 ## 功能
 
 - 暴露 **A2A 标准端点**（JSON-RPC + REST），其他 Agent 可以发消息给你的 Agent
-- 在 `/.well-known/agent.json` 发布 **Agent Card**，支持对等发现
+- 在 `/.well-known/agent-card.json` 发布 **Agent Card**，支持对等发现（兼容别名：`/.well-known/agent.json`）
 - 支持 **Bearer Token 认证**，确保安全的跨 Agent 通信
 - 将入站 A2A 消息路由到你的 OpenClaw Agent 并返回响应
 - 你的 Agent 也可以 **主动调用对等 Agent**
@@ -106,7 +106,7 @@ openclaw gateway restart
 
 ```bash
 # 检查 Agent Card 是否可访问
-curl -s http://localhost:18800/.well-known/agent.json | python3 -m json.tool
+curl -s http://localhost:18800/.well-known/agent-card.json | python3 -m json.tool
 ```
 
 你应该能看到包含 name、skills 和 URL 的 Agent Card。
@@ -119,7 +119,7 @@ curl -s http://localhost:18800/.well-known/agent.json | python3 -m json.tool
 openclaw config set plugins.entries.a2a-gateway.config.peers '[
   {
     "name": "对等方名称",
-    "agentCardUrl": "http://<对等方IP>:18800/.well-known/agent.json",
+    "agentCardUrl": "http://<对等方IP>:18800/.well-known/agent-card.json",
     "auth": {
       "type": "bearer",
       "token": "<对等方Token>"
@@ -174,6 +174,8 @@ node <插件路径>/skill/scripts/a2a-send.mjs \
 这是通过非标准字段 `message.agentId` 实现的（本插件支持）。该方式在 JSON-RPC/REST 上最可靠；gRPC 传输可能会丢弃未知 Message 字段。
 
 ### 让你的 Agent 知道如何调用（TOOLS.md 模板）
+
+即使插件已经安装并配置好，LLM agent 也**不会可靠地自动推断**如何调用 A2A peer（peer URL、token、需要执行的命令）。为了让 agent 稳定地发起 **出站** A2A 调用，建议把 A2A 调用方式写入 `TOOLS.md`。
 
 在 Agent 的 `TOOLS.md` 中添加以下内容（完整模板见 `skill/references/tools-md-template.md`），Agent 就能自主调用 A2A：
 
@@ -260,7 +262,7 @@ openclaw config set plugins.entries.a2a-gateway.config.security.token "$A_TOKEN"
 openclaw config set plugins.entries.a2a-gateway.config.routing.defaultAgentId 'main'
 
 # 添加 B 为 Peer（用 B 的 Token）
-openclaw config set plugins.entries.a2a-gateway.config.peers '[{"name":"Server-B","agentCardUrl":"http://100.10.10.2:18800/.well-known/agent.json","auth":{"type":"bearer","token":"<B_TOKEN>"}}]'
+openclaw config set plugins.entries.a2a-gateway.config.peers '[{"name":"Server-B","agentCardUrl":"http://100.10.10.2:18800/.well-known/agent-card.json","auth":{"type":"bearer","token":"<B_TOKEN>"}}]'
 
 openclaw gateway restart
 ```
@@ -283,7 +285,7 @@ openclaw config set plugins.entries.a2a-gateway.config.security.token "$B_TOKEN"
 openclaw config set plugins.entries.a2a-gateway.config.routing.defaultAgentId 'main'
 
 # 添加 A 为 Peer（用 A 的 Token）
-openclaw config set plugins.entries.a2a-gateway.config.peers '[{"name":"Server-A","agentCardUrl":"http://100.10.10.1:18800/.well-known/agent.json","auth":{"type":"bearer","token":"<A_TOKEN>"}}]'
+openclaw config set plugins.entries.a2a-gateway.config.peers '[{"name":"Server-A","agentCardUrl":"http://100.10.10.1:18800/.well-known/agent-card.json","auth":{"type":"bearer","token":"<A_TOKEN>"}}]'
 
 openclaw gateway restart
 ```
@@ -292,10 +294,10 @@ openclaw gateway restart
 
 ```bash
 # 服务器 A → 测试 B 的 Agent Card
-curl -s http://100.10.10.2:18800/.well-known/agent.json
+curl -s http://100.10.10.2:18800/.well-known/agent-card.json
 
 # 服务器 B → 测试 A 的 Agent Card
-curl -s http://100.10.10.1:18800/.well-known/agent.json
+curl -s http://100.10.10.1:18800/.well-known/agent-card.json
 
 # 发消息 A → B（使用 SDK 脚本）
 node <插件路径>/skill/scripts/a2a-send.mjs \
@@ -327,7 +329,7 @@ node <插件路径>/skill/scripts/a2a-send.mjs \
 
 | 端点 | 方法 | 说明 |
 |------|------|------|
-| `/.well-known/agent.json` | GET | Agent Card（发现） |
+| `/.well-known/agent-card.json` | GET | Agent Card（发现） |
 | `/a2a/jsonrpc` | POST | A2A JSON-RPC（message/send） |
 
 ## 常见问题
