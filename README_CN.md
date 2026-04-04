@@ -2,7 +2,7 @@
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
 [![A2A v0.3.0](https://img.shields.io/badge/A2A-v0.3.0-green.svg)](https://github.com/google/A2A)
-[![Tests](https://img.shields.io/badge/tests-469%20passing-brightgreen.svg)]()
+[![Tests](https://img.shields.io/badge/tests-486%20passing-brightgreen.svg)]()
 [![Node](https://img.shields.io/badge/node-%E2%89%A522-blue.svg)]()
 
 [English](README.md) | [简体中文](README_CN.md) | [繁體中文](README_TW.md) | [日本語](README_JA.md) | [한국어](README_KO.md) | [Français](README_FR.md) | [Español](README_ES.md) | [Deutsch](README_DE.md) | [Italiano](README_IT.md) | [Русский](README_RU.md) | [Português (Brasil)](README_PT-BR.md)
@@ -455,6 +455,28 @@ node <插件路径>/skill/scripts/a2a-send.mjs \
 | `/a2a/jsonrpc` | POST | A2A JSON-RPC（message/send） |
 | `/a2a/rest` | POST | A2A REST 传输 |
 | `/a2a/metrics` | GET | JSON telemetry 快照（启用时） |
+
+## 开发调试 CLI
+
+插件自带命令行调试工具，位于 `cli/` 目录。
+
+```bash
+cd cli && npm install && npm link   # 或直接: npx tsx cli/bin/a2a.ts
+```
+
+| 命令 | 用途 |
+|------|------|
+| `a2a health <peer>` | 检查对等方是否在线（获取 Agent Card） |
+| `a2a health --all` | 批量 ping 所有已配置的对等方 |
+| `a2a card <url>` | 展示远程 Agent Card |
+| `a2a send <peer> "消息"` | 发消息并展示响应 |
+| `a2a stream <peer> "消息"` | SSE 实时流式响应 |
+| `a2a status <peer> <taskId>` | 查询任务状态（`--wait` 轮询） |
+| `a2a discover` | mDNS 扫描局域网内的 A2A agent |
+| `a2a trace <peer> "消息"` | 请求全链路瀑布图（解析→Card→发送） |
+| `a2a bench <peer>` | 压测 + 延迟分位数（P50/P90/P99） |
+
+所有命令支持 `--json` 输出。Peer 可以是 `~/.openclaw/a2a-peers.json` 中的别名或直接 URL。
 
 ## 常见问题
 

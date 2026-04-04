@@ -2,7 +2,7 @@
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
 [![A2A v0.3.0](https://img.shields.io/badge/A2A-v0.3.0-green.svg)](https://github.com/google/A2A)
-[![Tests](https://img.shields.io/badge/tests-469%20passing-brightgreen.svg)]()
+[![Tests](https://img.shields.io/badge/tests-486%20passing-brightgreen.svg)]()
 [![Node](https://img.shields.io/badge/node-%E2%89%A522-blue.svg)]()
 
 [English](README.md) | [简体中文](README_CN.md) | [繁體中文](README_TW.md) | [日本語](README_JA.md) | [한국어](README_KO.md) | [Français](README_FR.md) | [Español](README_ES.md) | [Deutsch](README_DE.md) | [Italiano](README_IT.md) | [Русский](README_RU.md) | [Português (Brasil)](README_PT-BR.md)
@@ -525,6 +525,28 @@ node <PLUGIN_PATH>/skill/scripts/a2a-send.mjs \
 | `/a2a/metrics` | GET | Telemetry snapshot (optional bearer auth) |
 | `/a2a/push/register` | POST | Register push notification webhook |
 | `/a2a/push/:taskId` | DELETE | Unregister push notification |
+
+## DevTools CLI
+
+A companion CLI for developing and debugging A2A connections. Included in the `cli/` directory.
+
+```bash
+cd cli && npm install && npm link   # or: npx tsx cli/bin/a2a.ts
+```
+
+| Command | Purpose |
+|---------|---------|
+| `a2a health <peer>` | Check if a peer is online (fetches Agent Card) |
+| `a2a health --all` | Ping all configured peers at once |
+| `a2a card <url>` | Display a remote Agent Card |
+| `a2a send <peer> "message"` | Send a message and show the response |
+| `a2a stream <peer> "message"` | Stream a response via SSE in real-time |
+| `a2a status <peer> <taskId>` | Query task status (with `--wait` for polling) |
+| `a2a discover` | Scan the local network for A2A agents via mDNS |
+| `a2a trace <peer> "message"` | Request lifecycle waterfall (resolve → card → send) |
+| `a2a bench <peer>` | Load test with latency percentiles (P50/P90/P99) |
+
+All commands support `--json` for pipe-friendly output. Peers can be aliases from `~/.openclaw/a2a-peers.json` or direct URLs.
 
 ## Troubleshooting
 
